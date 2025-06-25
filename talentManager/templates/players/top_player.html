@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}選手トップページ{% endblock %}
+{% block content %}
+<h2>ようこそ選手 {{ user.username }} さん</h2>
+<p>自分の測定記録を確認できます。</p>
+<a href="{% url 'player_records' %}" class="btn btn-primary">記録を見る</a>
+{% endblock %}

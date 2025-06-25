@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}監督トップページ{% endblock %}
+{% block content %}
+<h2>監督 {{ user.username }} さん</h2>
+<p>部員の記録と状態を確認できます。</p>
+<a href="{% url 'all_players_records' %}" class="btn btn-info">全部員の記録を見る</a>
+{% endblock %}

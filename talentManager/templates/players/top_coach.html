@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}コーチトップページ{% endblock %}
+{% block content %}
+<h2>コーチ {{ user.username }} さん</h2>
+<p>全部員の記録を確認し、承認が可能です。</p>
+<a href="{% url 'all_players_records' %}" class="btn btn-warning">記録を回覧する</a>
+{% endblock %}
