@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% load django_bootstrap5 %}
+
+{% block title %}トップページ{% endblock %}
+
+{% block content %}
+<div class="text-center">
+  <h1 class="mb-4">高校野球部 タレントマネジメントシステム</h1>
+
+  {% if user.is_authenticated %}
+    <p class="lead">ようこそ、{{ user.get_username }} さん！</p>
+
+    <div class="d-grid gap-2 col-6 mx-auto mt-4">
+      <a href="{% url 'record_list' %}" class="btn btn-primary btn-lg">測定記録を確認する</a>
+
+      {% if user.is_manager %}
+        <a href="{% url 'record_input' %}" class="btn btn-success">測定結果を入力する</a>
+        <a href="{% url 'approval_request_list' %}" class="btn btn-warning">承認フローを管理する</a>
+      {% endif %}
+
+      {% if user.is_coach %}
+        <a href="{% url 'approval_review_list' %}" class="btn btn-danger">最終承認を行う</a>
+        <a href="{% url 'member_list' %}" class="btn btn-secondary">部員管理</a>
+      {% endif %}
+
+      {% if user.is_supervisor %}
+        <a href="{% url 'member_list' %}" class="btn btn-secondary">部員記録を閲覧する</a>
+      {% endif %}
+    </div>
+  {% else %}
+    <p>ログインして利用を開始してください。</p>
+    <a href="{% url 'login' %}" class="btn btn-primary mt-3">ログイン</a>
+  {% endif %}
+  <a href="{% url 'logout' %}" class="btn btn-outline-danger">ログアウト</a>
+</div>
+{% endblock content %}
