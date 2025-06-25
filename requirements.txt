@@ -1,0 +1,7 @@
+django
+mysqlclient
+django-widget-tweaks
+python-dotenv
+django-bootstrap5
+django-crispy-forms
+crispy-bootstrap5
