@@ -1,0 +1,18 @@
+<!-- templates/core/all_players_records.html -->
+{% extends "base.html" %}
+{% block title %}全部員の記録{% endblock %}
+{% block content %}
+<h2>全部員の記録</h2>
+<table class="table">
+  <thead><tr><th>選手</th><th>日付</th><th>ステータス</th></tr></thead>
+  <tbody>
+    {% for record in records %}
+    <tr>
+      <td>{{ record.player.student.user.username }}</td>
+      <td>{{ record.measured_at }}</td>
+      <td>{{ record.status }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
