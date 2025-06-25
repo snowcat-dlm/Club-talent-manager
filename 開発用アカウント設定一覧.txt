@@ -1,0 +1,7 @@
+# 管理者権限アカウント
+ユーザー名：
+admin_maintenance_cgh
+メールアドレス：
+test@example.com
+パスワード：
+g3h!#GgngPU%Fz2y
