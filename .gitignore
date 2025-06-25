@@ -1,0 +1,50 @@
+# Python関連
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.sqlite3
+
+# 環境変数ファイル（機密情報含む）
+.env
+*.env
+
+# VSCode設定
+.vscode/
+
+# Djangoのマイグレーションキャッシュ（任意）
+**/migrations/*.pyc
+**/migrations/__pycache__/
+**/migrations/*.py
+!**/migrations/__init__.py  
+
+# devcontainer（Docker）
+.devcontainer/.env
+.devcontainer/database/
+.devcontainer/.mypy_cache/
+.devcontainer/__pycache__/
+docker-compose.override.yml
+docker-compose.dev.yml
+# deploycontainer（Docker）
+.deploy/.env
+.deploy/database/
+.deploy/.mypy_cache/
+.deploy/__pycache__/
+docker-compose.override.yml
+docker-compose.dev.yml
+
+# アップロード・静的ファイル（運用で生成）
+media/
+staticfiles/
+
+# Pipenv or venv
+Pipfile.lock
+poetry.lock
+venv/
+.env/
+*.egg-info/
+
+# OS固有
+.DS_Store
+Thumbs.db
+
