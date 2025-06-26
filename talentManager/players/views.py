@@ -10,7 +10,6 @@ from django.conf import settings  #settings.pyをインポート
 # Create your views here.
 
 # トップページ
-@login_required
 def top_page(request):
     # ユーザーデータ取得
     user = request.user
@@ -31,10 +30,6 @@ def top_page(request):
         return render(request, 'players/top_director.html')
     else:
         return render(request, 'players/top_unknown.html')  # 未定義のロール用
-# # トップページ V1
-# @login_required
-# def top_page(request):
-#     return render(request, 'players/top_page.html')
 
 # 監督・コーチ ユーザー追加・削除・一覧表示画面
 @coach_or_director_required
@@ -53,6 +48,32 @@ def user_create(request):
         form = CustomUserCreationForm()
     return render(request, 'players/user_form.html', {'form': form})
 
+def create_member(request):
+    if request.user.role != 'director':
+        return render(request, 'players/unauthorized.html')
+
+    if request.method == 'POST':
+        form = MemberCreationForm(request.POST)
+        if form.is_valid():
+            user = CustomUser.objects.create_user(
+                username=form.cleaned_data['username'],
+                email=form.cleaned_data['email'],
+                password=form.cleaned_data['password'],
+                role=form.cleaned_data['role'],
+            )
+            StudentProfile.objects.create(
+                user=user,
+                grade=form.cleaned_data['grade'],
+                class_number=form.cleaned_data['class_number'],
+                joined_at=form.cleaned_data['joined_at'],
+                status='active',
+            )
+            return redirect('top_director')
+    else:
+        form = MemberCreationForm()
+    return render(request, 'players/create_member.html', {'form': form})
+
+
 @coach_or_director_required
 def user_delete(request, user_id):
     user = get_object_or_404(CustomUser, id=user_id)
@@ -63,7 +84,6 @@ def user_delete(request, user_id):
 
 
 # 記録確認画面  選手向け
-@login_required
 def player_records(request):
     records = MeasurementRecord.objects.filter(player_user=request.user).order_by('-measured_at')
     return render(request, 'players/player_records.html', {'records': records})
@@ -72,7 +92,6 @@ def record_input(request):
     # 部員選択・記録入力画面（フォームは後で追加）
     return render(request, 'players/record_input.html')
 # 全部員の記録一覧  コーチ・監督向け
-@login_required
 def all_players_records(request):
     records = MeasurementRecord.objects.all().order_by('-measured_at')
     return render(request, 'players/all_players_records.html', {'records': records})
