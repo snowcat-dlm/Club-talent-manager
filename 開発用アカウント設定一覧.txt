@@ -5,3 +5,35 @@ admin_maintenance_cgh
 test@example.com
 パスワード：
 g3h!#GgngPU%Fz2y
+
+# 監督
+ユーザー名：
+director
+メールアドレス：
+director_test@example.com
+パスワード：
+CfKB$omDsK2d@#sX
+
+# コーチ
+ユーザー名：
+coach
+メールアドレス：
+coach_test@example.com
+パスワード：
+YGyGmX%*FqD8nxEL
+
+# マネージャー
+ユーザー名：
+manager
+メールアドレス：
+manager_test@example.com
+パスワード：
+Xo9C%dzeKscyoA22
+
+# 選手
+ユーザー名：
+player
+メールアドレス：
+player_test@example.com
+パスワード：
+tXfhp*HsG7SSUgb^
