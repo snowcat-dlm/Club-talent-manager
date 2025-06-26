@@ -10,9 +10,53 @@
     {% bootstrap_javascript %}
   </head>
   <body>
+    <!-- ナビゲーションバー -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">Talent Manager</a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav me-auto">
+                    {% if user.is_authenticated %}
+                      <li class="nav-item">
+                        <a class="nav-link text-white" href="{% url 'top_page' %}">トップページ</a>
+                      </li>
+                    {% endif %}
+                </ul>
+
+                <ul class="navbar-nav ms-auto">
+                    {% if user.is_authenticated %}
+                      <li class="nav-item">
+                        <form method="post" action="{% url 'logout' %}">
+                          {% csrf_token %}
+                          <button type="submit" class="nav-link text-white">ログアウト</button>
+                        </form>
+                      </li>
+                    {% else %}
+                      <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">ログイン</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- メッセージ表示 -->
+    <div class="container mt-3">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <!-- コンテンツ領域 -->
     <div class="container mt-4">
         {% block content %}
         {% endblock content %}
     </div>
+
+    <!-- フッター -->
+    <footer class="bg-light text-center py-3 mt-4">
+        <p class="mb-0">&copy; 2025 高校野球部管理システム</p>
+    </footer>
   </body>
 </html>
