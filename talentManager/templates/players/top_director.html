@@ -2,13 +2,13 @@
 {% block title %}監督トップページ{% endblock %}
 {% block content %}
 <div class="container mt-4">
-  <h2>ようこそ {{ user.username }} さん</h2>
+    <h2>ようこそ {{ user.username }} さん</h2>
 
-  <p>以下の操作が可能です：</p>
-  <ul>
-    <li><a class="btn btn-info mb-2" href="{% url 'all_players_records' %}">部員の記録を確認</a></li>
-    <li><a class="btn btn-success mb-2" href="{% url 'user_list' %}">部員の管理（追加・退部・引退）</a></li>
-  </ul>
+    <p>以下の操作が可能です：</p>
+    <ul>
+        <li><a class="btn btn-info mb-2" href="{% url 'all_players_records' %}">部員の測定記録を確認</a></li>
+        <li><a class="btn btn-success mb-2" href="{% url 'user_list' %}">部員の管理（追加・退部・引退）</a></li>
+    </ul>
 
 </div>
 {% endblock %}

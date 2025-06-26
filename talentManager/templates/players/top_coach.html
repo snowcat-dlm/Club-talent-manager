@@ -1,7 +1,14 @@
 {% extends "base.html" %}
 {% block title %}コーチトップページ{% endblock %}
 {% block content %}
-<h2>コーチ {{ user.username }} さん</h2>
-<p>全部員の記録を確認し、承認が可能です。</p>
-<a href="{% url 'all_players_records' %}" class="btn btn-warning">記録を回覧する</a>
+<div class="container mt-4">
+    <h2>ようこそ {{ user.username }} さん</h2>
+    
+    <p>以下の操作が可能です：</p>
+    <ul>
+        <li><a class="btn btn-info mb-2" href="{% url 'all_players_records' %}">部員の測定記録を確認</a></li>
+        <li><a class="btn btn-success mb-2" href="{% url 'user_list' %}">部員の管理（追加・退部・引退）</a></li>
+    </ul>
+
+</div>
 {% endblock %}
