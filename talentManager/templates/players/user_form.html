@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}ユーザー作成{% endblock %}
+{% block content %}
+<h2>ユーザー作成</h2>
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button class="btn btn-primary">作成</button>
+  <a class="btn btn-secondary" href="{% url 'user_list' %}">戻る</a>
+</form>
+{% endblock %}

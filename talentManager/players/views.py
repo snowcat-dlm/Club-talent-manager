@@ -1,6 +1,9 @@
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 
+from accounts.models import CustomUser
+from accounts.forms import CustomUserCreationForm
+from .decorators import coach_or_director_required
 from django.conf import settings  #settings.pyをインポート
 
 
@@ -32,6 +35,32 @@ def top_page(request):
 # @login_required
 # def top_page(request):
 #     return render(request, 'players/top_page.html')
+
+# 監督・コーチ ユーザー追加・削除・一覧表示画面
+@coach_or_director_required
+def user_list(request):
+    users = CustomUser.objects.exclude(is_superuser=True)
+    return render(request, 'players/user_list.html', {'users': users})
+
+@coach_or_director_required
+def user_create(request):
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('user_list')
+    else:
+        form = CustomUserCreationForm()
+    return render(request, 'players/user_form.html', {'form': form})
+
+@coach_or_director_required
+def user_delete(request, user_id):
+    user = get_object_or_404(CustomUser, id=user_id)
+    if request.method == 'POST':
+        user.delete()
+        return redirect('user_list')
+    return render(request, 'players/user_confirm_delete.html', {'user': user})
+
 
 # 記録確認画面  選手向け
 @login_required
