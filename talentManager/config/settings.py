@@ -38,9 +38,10 @@ DEBUG = os.getenv('DJANGO_DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = []
 
+# カスタムユーザーモデルの指定
+AUTH_USER_MODEL = 'accounts.CustomUser'
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -48,10 +49,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'players.apps.PlayersConfig',
     'django_bootstrap5',
     #'crispy-bootstrap5',
     #'django-crispy-forms',
+    'players',    # players app (main app) を登録
+    'accounts',   # accounts app (アカウント管理・認証・カスタムユーザーモデル app) を登録
 ]
 
 MIDDLEWARE = [
