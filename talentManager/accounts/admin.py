@@ -11,10 +11,13 @@ class CustomUserAdmin(UserAdmin):
     fieldsets = UserAdmin.fieldsets + (
         (None, {'fields': ('role',)}),
     )
-    add_fieldsets = UserAdmin.add_fieldsets + (
-        (None, {'fields': ('role',)}),
-    )
-    
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('username', 'email', 'role', 'password1', 'password2'),
+        }),
+    ) # UserAdmin.add_fieldsets に追加ではなく明示的に追加
+
     list_display = ('username', 'email', 'role', 'is_staff')
     list_filter = ('role', 'is_staff')
 
