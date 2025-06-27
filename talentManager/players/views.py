@@ -158,7 +158,44 @@ def player_records(request):
 def record_input(request):
     # 部員選択・記録入力画面（フォームは後で追加）
     return render(request, 'players/record_input.html')
+
 # 全部員の記録一覧  コーチ・監督向け
+STATUS_CHOICES = [
+    ('draft', '下書き'),
+    ('awaiting_player_approval', '選手承認待ち'),
+    ('awaiting_coach_approval', 'コーチ承認待ち'),
+    ('approved', '承認済み'),
+]
+@coach_or_director_required
 def all_players_records(request):
-    records = MeasurementRecord.objects.all().order_by('-measured_at')
-    return render(request, 'players/all_players_records.html', {'records': records})
+    records = MeasurementRecord.objects.select_related('player__student__user').all().order_by('-measured_at')
+    players = PlayerProfile.objects.select_related('student__user').all()
+
+    # フィルター取得
+    player_id = request.GET.get('player')
+    status = request.GET.get('status')
+    date_from = request.GET.get('date_from')
+    date_to = request.GET.get('date_to')
+
+    # フィルター適用
+    if player_id:
+        records = records.filter(player_id=player_id)
+
+    if status:
+        records = records.filter(status=status)
+
+    if date_from:
+        records = records.filter(measured_at__gte=date_from)
+
+    if date_to:
+        records = records.filter(measured_at__lte=date_to)
+
+    return render(request, 'players/all_players_records.html', {
+        'records': records,
+        'players': players,
+        'selected_player': player_id,
+        'selected_status': status,
+        'date_from': date_from,
+        'date_to': date_to,
+        'status_choices': STATUS_CHOICES,
+    })
