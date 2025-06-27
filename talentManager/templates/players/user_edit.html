@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}ユーザー編集{% endblock %}
+
+{% block content %}
+<h2>ユーザー編集</h2>
+
+<form method="post">
+  {% csrf_token %}
+  {{ user_form.as_p }}
+
+  <div id="student-fields" style="display: none;">
+    {{ student_form.as_p }}
+  </div>
+
+  <div id="player-fields" style="display: none;">
+    {{ player_form.as_p }}
+  </div>
+
+  <button type="submit" class="btn btn-primary">更新</button>
+  <a href="{% url 'user_list' %}" class="btn btn-secondary">キャンセル</a>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const roleSelect = document.getElementById("id_role");
+  const studentSection = document.getElementById("student-fields");
+  const playerSection = document.getElementById("player-fields");
+
+  function toggleFields() {
+    const role = roleSelect.value;
+    // 学生フォームの表示制御
+    const showStudent = (role === "player" || role === "manager");
+    studentSection.style.display = showStudent ? "block" : "none";
+    studentSection.querySelectorAll("input, select, textarea").forEach(el => {
+      el.disabled = !showStudent;
+    });
+    // 選手フォームの表示制御
+    const showPlayer = (role === "player");
+    playerSection.style.display = showPlayer ? "block" : "none";
+    playerSection.querySelectorAll("input, select, textarea").forEach(el => {
+      el.disabled = !showPlayer;
+    });
+  }
+
+  roleSelect.addEventListener("change", toggleFields);
+  toggleFields();  // 初期実行
+});
+</script>
+{% endblock %}

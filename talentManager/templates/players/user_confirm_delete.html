@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}ユーザー削除確認{% endblock %}
+{% block content %}
+<h2>ユーザー「{{ user.username }}」を削除してもよいですか？</h2>
+<form method="post">
+  {% csrf_token %}
+  <button class="btn btn-danger">削除する</button>
+  <a class="btn btn-secondary" href="{% url 'user_list' %}">キャンセル</a>
+</form>
+{% endblock %}

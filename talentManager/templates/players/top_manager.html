@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}マネージャートップページ{% endblock %}
+{% block content %}
+<h2>マネージャー {{ user.username }} さん</h2>
+<p>選手の測定記録を入力し、承認フローを開始できます。</p>
+<a href="{% url 'record_input' %}" class="btn btn-success">記録を入力する</a>
+{% endblock %}

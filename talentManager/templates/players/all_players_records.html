@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}記録一覧{% endblock %}
+{% block content %}
+<h2>測定記録一覧</h2>
+
+<form method="get" class="row g-3 mb-3">
+  <div class="col-md-3">
+    <label class="form-label">選手</label>
+    <select name="player" class="form-select">
+      <option value="">-- 全員 --</option>
+      {% for player in players %}
+        <option value="{{ player.id }}" {% if selected_player == player.id|stringformat:"s" %}selected{% endif %}>
+          {{ player.username }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-2">
+    <label class="form-label">ステータス</label>
+    <select name="status" class="form-select">
+      <option value="">-- 全て --</option>
+      {% for value, label in status_choices %}
+      <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>
+        {{ label }}
+      </option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-2">
+    <label class="form-label">日付（開始）</label>
+    <input type="date" name="date_from" class="form-control" value="{{ date_from }}">
+  </div>
+  <div class="col-md-2">
+    <label class="form-label">日付（終了）</label>
+    <input type="date" name="date_to" class="form-control" value="{{ date_to }}">
+  </div>
+  <div class="col-md-3 align-self-end">
+    <button type="submit" class="btn btn-primary">絞り込む</button>
+    <a href="{% url 'all_players_records' %}" class="btn btn-secondary">リセット</a>
+  </div>
+</form>
+
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>選手</th>
+      <th>測定日</th>
+      <th>ステータス</th>
+      <th>作成者</th>
+      <th>更新日</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for record in records %}
+    <tr>
+      <td>{{ record.player.student.user.username }}</td>
+      <td>{{ record.measured_at }}</td>
+      <td>{{ record.status }}</td>
+      <td>{{ record.created_by.username }}</td>
+      <td>{{ record.updated_at }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="5">該当する記録はありません。</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
