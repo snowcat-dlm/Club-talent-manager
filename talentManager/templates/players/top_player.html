@@ -1,7 +1,13 @@
 {% extends "base.html" %}
 {% block title %}選手トップページ{% endblock %}
 {% block content %}
-<h2>ようこそ選手 {{ user.username }} さん</h2>
-<p>自分の測定記録を確認できます。</p>
-<a href="{% url 'player_records' %}" class="btn btn-primary">記録を見る</a>
+<div class="container mt-4">
+  <h2>ようこそ選手 {{ user.username }} さん</h2>
+  <div class="list-group mt-4">
+    <a href="{% url 'my_record_list' %}" class="list-group-item list-group-item-action">
+      自分の測定記録一覧を確認する・記録を承認する
+    </a>
+  </div>
+</div>
 {% endblock %}
+

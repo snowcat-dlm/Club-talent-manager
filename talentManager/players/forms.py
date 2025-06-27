@@ -1,7 +1,8 @@
 from django import forms
 from accounts.models import CustomUser
 from players.models import StudentProfile, PlayerProfile
-from django.forms.widgets import SelectDateWidget
+from .models import MeasurementRecord, MeasurementItem
+from django.forms import inlineformset_factory
 
 class MemberCreationForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput(), label="パスワード")
@@ -50,3 +51,28 @@ class PlayerProfileForm(forms.ModelForm):
         # フィールドをすべて optional に（手動で制御）
         for field in self.fields.values():
             field.required = False
+
+class MeasurementForm(forms.ModelForm):
+    measured_at = forms.DateField(
+        widget=forms.DateInput(
+            attrs={'type': 'date', 'class': 'form-control'}
+        ),
+        label="測定日"
+    )
+    class Meta:
+        model = MeasurementRecord
+        fields = ['player', 'measured_at']
+
+MeasurementItemFormSet = inlineformset_factory(
+    MeasurementRecord,
+    MeasurementItem,
+    fields=('category', 'item_name', 'value', 'unit'),
+    extra=4,
+    can_delete=False
+)
+
+# このフォームは、選手が測定記録を否認する際に使用されます。
+# 否認理由を入力するためのフォームです。
+class RejectionForm(forms.Form):
+    comment = forms.CharField(label='否認理由', widget=forms.Textarea(attrs={'rows': 3}), required=True)
+

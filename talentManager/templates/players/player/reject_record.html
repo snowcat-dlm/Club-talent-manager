@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% load django_bootstrap5 %}
+{% block title %}測定記録の否認{% endblock %}
+{% load static %}
+{% block content %}
+<div class="container mt-4">
+  <h2>記録の否認理由を入力</h2>
+  <p>対象：{{ record.player.student.user.username }} / 測定日: {{ record.measured_at }}</p>
+
+  <form method="post">
+    {% csrf_token %}
+    {% bootstrap_form form %}
+    <button type="submit" class="btn btn-danger">否認する</button>
+    <a href="{% url 'my_record_list' %}" class="btn btn-secondary">キャンセル</a>
+  </form>
+</div>
+{% endblock %}
