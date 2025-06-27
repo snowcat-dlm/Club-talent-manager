@@ -21,5 +21,6 @@ urlpatterns = [
     path('users/<int:user_id>/edit/', views.user_edit, name='user_edit'),
     path('coach/approvals/', views.coach_approval_list, name='coach_approval_list'),
     path('coach/approve/<int:record_id>/', views.approve_record_as_coach, name='approve_record_as_coach'),
+    path('coach/reject/<int:record_id>/', views.reject_record_as_coach, name='reject_record_as_coach'),
 ]
 # ここでは、ユーザーのログイン、ログアウト、部員の記録入力、全選手の記録表示、部員管理などのURLパターンを定義しています。

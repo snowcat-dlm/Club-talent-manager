@@ -273,7 +273,6 @@ def coach_approval_list(request):
         approvalstatus__status='pending'
     ).distinct()
     return render(request, 'players/coach/approval_list.html', {'records': records})
-
 # コーチによる記録承認処理
 @coach_required
 def approve_record_as_coach(request, record_id):
@@ -294,6 +293,34 @@ def approve_record_as_coach(request, record_id):
         record.save()
 
         return redirect('coach_approval_list')
+# コーチによる記録否認処理
+@role_required('coach')
+def reject_record_as_coach(request, record_id):
+    approval = get_object_or_404(
+        ApprovalStatus,
+        record_id=record_id,
+        approver=request.user,
+        role='coach',
+        status='pending'
+    )
+
+    if request.method == 'POST':
+        form = RejectionForm(request.POST)
+        if form.is_valid():
+            approval.status = 'rejected'
+            approval.comment = form.cleaned_data['comment']
+            approval.approved_at = timezone.now()
+            approval.save()
+
+            # レコードのステータスは manager の判断で修正される
+            return redirect('coach_approval_list')
+    else:
+        form = RejectionForm()
+
+    return render(request, 'players/coach/reject_record.html', {
+        'form': form,
+        'record': approval.record
+    })
 
 # 全部員の記録一覧  コーチ・監督向け
 STATUS_CHOICES = [
