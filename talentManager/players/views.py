@@ -2,10 +2,11 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 
 from django.contrib import messages
+from django.utils import timezone
 from accounts.models import CustomUser
-from .decorators import coach_or_director_required    # @coach_or_director_requiredの設定をインポート
+from .decorators import coach_or_director_required, coach_required    # @coach_required, @coach_or_director_requiredの設定をインポート
 from django.conf import settings                      # settings.pyをインポート
-from players.models import StudentProfile, PlayerProfile, MeasurementRecord
+from players.models import StudentProfile, PlayerProfile, MeasurementRecord, ApprovalStatus
 from players.forms import MemberCreationForm, StudentProfileForm, PlayerProfileForm
 
 
@@ -158,6 +159,38 @@ def player_records(request):
 def record_input(request):
     # 部員選択・記録入力画面（フォームは後で追加）
     return render(request, 'players/record_input.html')
+
+# コーチ向けの承認待ち記録一覧
+@coach_required
+def coach_approval_list(request):
+    records = MeasurementRecord.objects.filter(
+        status='awaiting_coach_approval',
+        approvalstatus__approver=request.user,
+        approvalstatus__role='coach',
+        approvalstatus__status='pending'
+    ).distinct()
+    return render(request, 'players/coach/approval_list.html', {'records': records})
+
+# コーチによる記録承認処理
+@coach_required
+def approve_record_as_coach(request, record_id):
+    if request.method == 'POST':
+        record = get_object_or_404(MeasurementRecord, id=record_id)
+        approval = get_object_or_404(
+            ApprovalStatus,
+            record=record,
+            approver=request.user,
+            role='coach'
+        )
+        approval.status = 'approved'
+        approval.approved_at = timezone.now()
+        approval.save()
+
+        # レコード全体のステータス更新
+        record.status = 'approved'
+        record.save()
+
+        return redirect('coach_approval_list')
 
 # 全部員の記録一覧  コーチ・監督向け
 STATUS_CHOICES = [
