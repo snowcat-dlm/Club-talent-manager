@@ -1,36 +1,25 @@
 {% extends "base.html" %}
-{% block title %}部員作成{% endblock %}
-
+{% block title %}ユーザー編集{% endblock %}
 
 {% block content %}
-<h2>部員の追加</h2>
+<h2>ユーザー編集</h2>
 
 <form method="post">
   {% csrf_token %}
-  {% if user_form.errors or student_form.errors or player_form.errors %}
-    <div class="alert alert-danger">
-      入力に誤りがあります。内容を確認してください。
-    </div>
-  {% endif %}
-
-  <h4>ユーザー情報</h4>
   {{ user_form.as_p }}
 
-  <div id="student-fields" style="display:none">
-    <h4>学生プロフィール</h4>
+  <div id="student-fields" style="display: none;">
     {{ student_form.as_p }}
   </div>
 
-  <div id="player-fields" style="display:none">
-    <h4>プレイヤープロフィール</h4>
+  <div id="player-fields" style="display: none;">
     {{ player_form.as_p }}
   </div>
 
-  <button type="submit" class="btn btn-primary">登録</button>
+  <button type="submit" class="btn btn-primary">更新</button>
   <a href="{% url 'user_list' %}" class="btn btn-secondary">キャンセル</a>
 </form>
 {% endblock %}
-
 
 {% block scripts %}
 <script>

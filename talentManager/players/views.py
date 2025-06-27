@@ -5,7 +5,7 @@ from django.contrib import messages
 from accounts.models import CustomUser
 from .decorators import coach_or_director_required    # @coach_or_director_requiredの設定をインポート
 from django.conf import settings                      # settings.pyをインポート
-from players.models import StudentProfile, PlayerProfile
+from players.models import StudentProfile, PlayerProfile, MeasurementRecord
 from players.forms import MemberCreationForm, StudentProfileForm, PlayerProfileForm
 
 
@@ -90,6 +90,55 @@ def user_create(request):
         'user_form': user_form,
         'student_form': student_form,
         'player_form': player_form,
+    })
+# 部員編集画面
+@coach_or_director_required
+def user_edit(request, user_id):
+    user = get_object_or_404(CustomUser, id=user_id)
+    try:
+        student = user.studentprofile
+    except StudentProfile.DoesNotExist:
+        student = None
+
+    try:
+        player = student.playerprofile if student else None
+    except PlayerProfile.DoesNotExist:
+        player = None
+
+    if request.method == 'POST':
+        user_form = MemberCreationForm(request.POST, instance=user)
+        student_form = StudentProfileForm(request.POST, instance=student) if student else StudentProfileForm(request.POST)
+        player_form = PlayerProfileForm(request.POST, instance=player) if player else PlayerProfileForm(request.POST)
+
+        role = request.POST.get('role')
+
+        needs_student = role in ['player', 'manager']
+        needs_player = role == 'player'
+
+        if user_form.is_valid() and (not needs_student or student_form.is_valid()) and (not needs_player or player_form.is_valid()):
+            user_form.save()
+
+            if needs_student:
+                student = student_form.save(commit=False)
+                student.user = user
+                student.save()
+
+                if needs_player:
+                    player = player_form.save(commit=False)
+                    player.student = student
+                    player.save()
+
+            return redirect('user_list')
+    else:
+        user_form = MemberCreationForm(instance=user)
+        student_form = StudentProfileForm(instance=student)
+        player_form = PlayerProfileForm(instance=player)
+
+    return render(request, 'players/user_edit.html', {
+        'user_form': user_form,
+        'student_form': student_form,
+        'player_form': player_form,
+        'user_id': user_id
     })
 # 部員削除画面
 @coach_or_director_required
