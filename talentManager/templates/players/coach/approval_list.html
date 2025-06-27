@@ -1,19 +1,36 @@
 {% extends "base.html" %}
 {% block title %}承認待ち記録一覧{% endblock %}
+{% load django_bootstrap5 %}
+{% load static %}
 {% block content %}
-<h2>承認待ち記録一覧</h2>
-<ul>
-  {% for record in records %}
-    <li>
-      {{ record.player.student.user.username }} - {{ record.measured_at }}
-      <form action="{% url 'approve_record_as_coach' record.id %}" method="post">
-        {% csrf_token %}
-        <button type="submit">承認する</button>
-      </form>
-    </li>
-  {% empty %}
-    <li>承認待ちの記録はありません。</li>
-  {% endfor %}
-</ul>
+<div class="container mt-4">
+  <h2>承認待ち記録一覧（コーチ）</h2>
+
+  {% if records %}
+    {% for record in records %}
+      <div class="card mb-4">
+        <div class="card-header">
+          {{ record.player.student.user.username }} / 測定日: {{ record.measured_at }}
+        </div>
+        <div class="card-body">
+          <ul>
+            {% for item in record.items.all %}
+              <li>{{ item.category }} / {{ item.item_name }}: {{ item.value }} {{ item.unit }}</li>
+            {% empty %}
+              <li>測定項目がありません。</li>
+            {% endfor %}
+          </ul>
+          <form method="post" action="{% url 'approve_record_as_coach' record.id %}" class="d-inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-success me-2">✅ 承認する</button>
+          </form>
+          <a href="{% url 'reject_record_as_coach' record.id %}" class="btn btn-outline-danger">❌ 否認する</a>
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>承認待ちの記録はありません。</p>
+  {% endif %}
+</div>
 {% endblock %}
 
