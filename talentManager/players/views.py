@@ -4,10 +4,11 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.utils import timezone
 from accounts.models import CustomUser
-from .decorators import coach_or_director_required, coach_required    # @coach_required, @coach_or_director_requiredの設定をインポート
+from .decorators import coach_or_director_required, coach_required, manager_required    # @coach_required, @coach_or_director_requiredの設定をインポート
 from django.conf import settings                      # settings.pyをインポート
 from players.models import StudentProfile, PlayerProfile, MeasurementRecord, ApprovalStatus
 from players.forms import MemberCreationForm, StudentProfileForm, PlayerProfileForm
+from players.forms import MeasurementForm, MeasurementItemFormSet
 
 
 
@@ -155,10 +156,61 @@ def user_delete(request, user_id):
 def player_records(request):
     records = MeasurementRecord.objects.filter(player_user=request.user).order_by('-measured_at')
     return render(request, 'players/player_records.html', {'records': records})
-# 部員選択・記録入力画面  マネージャー向け
-def record_input(request):
-    # 部員選択・記録入力画面（フォームは後で追加）
-    return render(request, 'players/record_input.html')
+
+# 記録入力画面  マネージャー向け
+@manager_required
+def create_measurement_record(request):
+    if request.method == 'POST':
+        form = MeasurementForm(request.POST)
+        formset = MeasurementItemFormSet(request.POST)
+
+        if form.is_valid() and formset.is_valid():
+            record = form.save(commit=False)
+            record.created_by = request.user
+            record.status = 'awaiting_player_approval'
+            record.save()
+            formset.instance = record
+            formset.save()
+
+            # 承認フロー作成（選手）
+            ApprovalStatus.objects.create(
+                record=record,
+                approver=record.player.student.user,
+                role='player'
+            )
+
+            # 承認フロー作成（全コーチ）
+            coaches = CustomUser.objects.filter(role='coach')
+            coach_approvals = [
+                ApprovalStatus(
+                    record=record,
+                    approver=coach,
+                    role='coach'
+                )
+                for coach in coaches
+            ]
+            ApprovalStatus.objects.bulk_create(coach_approvals)
+
+            return redirect('measurement_record_list')
+    else:
+        form = MeasurementForm()
+        formset = MeasurementItemFormSet()
+
+    return render(request, 'players/manager/create_record.html', {
+        'form': form,
+        'formset': formset,
+    })
+# 記録一覧画面  マネージャー向け
+@manager_required
+def measurement_record_list(request):
+    records = MeasurementRecord.objects.filter(created_by=request.user).order_by('-measured_at')
+    return render(request, 'players/manager/record_list.html', {'records': records})
+# 承認ステータス一覧  マネージャー向け
+@manager_required
+def approval_status_list(request):
+    records = MeasurementRecord.objects.filter(created_by=request.user).prefetch_related('approvalstatus_set')
+    return render(request, 'players/manager/approval_status_list.html', {'records': records})
+
 
 # コーチ向けの承認待ち記録一覧
 @coach_required

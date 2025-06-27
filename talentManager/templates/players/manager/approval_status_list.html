@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}承認状況一覧{% endblock %}
+{% load django_bootstrap5 %}
+{% load static %}
+{% block content %}
+<div class="container mt-4">
+  <h2>承認状況一覧</h2>
+
+  {% if records %}
+    {% for record in records %}
+      <div class="card mb-3">
+        <div class="card-header">
+          {{ record.player.student.user.username }} - 測定日: {{ record.measured_at }}
+          <span class="badge bg-secondary float-end">{{ record.get_status_display }}</span>
+        </div>
+        <div class="card-body">
+          <ul class="list-group">
+            {% for approval in record.approvalstatus_set.all %}
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                {{ approval.get_role_display }}: {{ approval.approver.username }}
+                <span>
+                  {% if approval.status == 'approved' %}
+                    ✅ 承認済み（{{ approval.approved_at|date:"Y-m-d H:i" }}）
+                  {% elif approval.status == 'rejected' %}
+                    ❌ 否認（{{ approval.comment|default:"理由なし" }})
+                  {% else %}
+                    ⏳ 承認待ち
+                  {% endif %}
+                </span>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>まだ記録はありません。</p>
+  {% endif %}
+</div>
+{% endblock %}
