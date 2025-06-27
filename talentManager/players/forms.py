@@ -53,6 +53,12 @@ class PlayerProfileForm(forms.ModelForm):
             field.required = False
 
 class MeasurementForm(forms.ModelForm):
+    measured_at = forms.DateField(
+        widget=forms.DateInput(
+            attrs={'type': 'date', 'class': 'form-control'}
+        ),
+        label="測定日"
+    )
     class Meta:
         model = MeasurementRecord
         fields = ['player', 'measured_at']
@@ -64,4 +70,9 @@ MeasurementItemFormSet = inlineformset_factory(
     extra=4,
     can_delete=False
 )
+
+# このフォームは、選手が測定記録を否認する際に使用されます。
+# 否認理由を入力するためのフォームです。
+class RejectionForm(forms.Form):
+    comment = forms.CharField(label='否認理由', widget=forms.Textarea(attrs={'rows': 3}), required=True)
 
