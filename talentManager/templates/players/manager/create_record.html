@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% load django_bootstrap5 %}
+{% block title %}測定記録の新規登録{% endblock %}
+{% block content %}
+<div class="container mt-4">
+  <h2>測定記録の新規登録</h2>
+  <form method="post">
+    {% csrf_token %}
+    {% bootstrap_form form %}
+    
+    <h4 class="mt-4">測定項目</h4>
+    {{ formset.management_form }}
+    <div class="row">
+      {% for item_form in formset %}
+        <div class="col-md-6 mb-3">
+          <div class="card p-3">
+            {% bootstrap_form item_form %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+    
+    <button type="submit" class="btn btn-primary">登録</button>
+    <a href="{% url 'measurement_record_list' %}" class="btn btn-secondary">戻る</a>
+  </form>
+</div>
+{% endblock %}

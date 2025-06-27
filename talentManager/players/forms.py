@@ -1,7 +1,8 @@
 from django import forms
 from accounts.models import CustomUser
 from players.models import StudentProfile, PlayerProfile
-from django.forms.widgets import SelectDateWidget
+from .models import MeasurementRecord, MeasurementItem
+from django.forms import inlineformset_factory
 
 class MemberCreationForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput(), label="パスワード")
@@ -50,3 +51,17 @@ class PlayerProfileForm(forms.ModelForm):
         # フィールドをすべて optional に（手動で制御）
         for field in self.fields.values():
             field.required = False
+
+class MeasurementForm(forms.ModelForm):
+    class Meta:
+        model = MeasurementRecord
+        fields = ['player', 'measured_at']
+
+MeasurementItemFormSet = inlineformset_factory(
+    MeasurementRecord,
+    MeasurementItem,
+    fields=('category', 'item_name', 'value', 'unit'),
+    extra=4,
+    can_delete=False
+)
+

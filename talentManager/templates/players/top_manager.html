@@ -1,7 +1,17 @@
-{% extends "base.html" %}
-{% block title %}マネージャートップページ{% endblock %}
+{% extends 'base.html' %}
 {% block content %}
-<h2>マネージャー {{ user.username }} さん</h2>
-<p>選手の測定記録を入力し、承認フローを開始できます。</p>
-<a href="{% url 'record_input' %}" class="btn btn-success">記録を入力する</a>
+<div class="container mt-4">
+  <h2>マネージャー用トップページ</h2>
+  <div class="list-group mt-4">
+    <a href="{% url 'create_measurement_record' %}" class="list-group-item list-group-item-action">
+      測定記録の新規登録
+    </a>
+    <a href="{% url 'measurement_record_list' %}" class="list-group-item list-group-item-action">
+      作成済み測定記録の一覧
+    </a>
+    <a href="{% url 'approval_status_list' %}" class="list-group-item list-group-item-action">
+        承認状況の確認
+    </a>
+  </div>
+</div>
 {% endblock %}
