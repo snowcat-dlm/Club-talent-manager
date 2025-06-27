@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}自分の測定記録一覧{% endblock %}
+{% load django_bootstrap5 %}
+{% load static %}
+{% block content %}
+<div class="container mt-4">
+  <h2>自分の測定記録一覧</h2>
+
+  {% if records %}
+    {% for record in records %}
+      <div class="card mb-4">
+        <div class="card-header">
+          測定日: {{ record.measured_at }}
+          <span class="badge bg-secondary float-end">{{ record.get_status_display }}</span>
+        </div>
+
+        <div class="card-body">
+          <h5>測定項目</h5>
+          <ul>
+            {% for item in record.items.all %}
+              <li>{{ item.category }} / {{ item.item_name }}: {{ item.value }} {{ item.unit }}</li>
+            {% empty %}
+              <li>測定項目なし</li>
+            {% endfor %}
+          </ul>
+
+          <hr>
+
+          {% for approval in record.approvalstatus_set.all %}
+            {% if approval.role == 'player' and approval.approver == user %}
+                {% if approval.status == 'pending' %}
+                <div class="mt-3">
+                    <form method="post" action="{% url 'approve_measurement_record' record.id %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary me-2">🔘 承認する</button>
+                    </form>
+                    <a href="{% url 'reject_measurement_record' record.id %}" class="btn btn-outline-danger">❌ 否認する</a>
+                </div>
+                {% elif approval.status == 'approved' %}
+                <p class="text-success mt-2">✅ 承認済み（{{ approval.approved_at|date:"Y-m-d H:i" }}）</p>
+                {% elif approval.status == 'rejected' %}
+                <p class="text-danger mt-2">❌ 否認済み（{{ approval.approved_at|date:"Y-m-d H:i" }}）<br>
+                理由：{{ approval.comment|default:"未入力" }}</p>
+                {% endif %}
+            {% endif %}
+            {% endfor %}
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>まだ測定記録がありません。</p>
+  {% endif %}
+</div>
+{% endblock %}

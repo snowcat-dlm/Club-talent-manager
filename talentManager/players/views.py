@@ -4,16 +4,11 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.utils import timezone
 from accounts.models import CustomUser
-from .decorators import coach_or_director_required, coach_required, manager_required    # @coach_required, @coach_or_director_requiredの設定をインポート
+from .decorators import coach_or_director_required, coach_required, manager_required, role_required    # @coach_required, @coach_or_director_requiredの設定をインポート
 from django.conf import settings                      # settings.pyをインポート
 from players.models import StudentProfile, PlayerProfile, MeasurementRecord, ApprovalStatus
-from players.forms import MemberCreationForm, StudentProfileForm, PlayerProfileForm
-from players.forms import MeasurementForm, MeasurementItemFormSet
-
-
-
-
-# Create your views here.
+from players.forms import MemberCreationForm, StudentProfileForm, PlayerProfileForm, MeasurementForm, MeasurementItemFormSet, RejectionForm
+from .models import MeasurementRecord, ApprovalStatus
 
 # トップページ
 def top_page(request):
@@ -153,9 +148,65 @@ def user_delete(request, user_id):
 
 
 # 記録確認画面  選手向け
-def player_records(request):
-    records = MeasurementRecord.objects.filter(player_user=request.user).order_by('-measured_at')
-    return render(request, 'players/player_records.html', {'records': records})
+@role_required('player')
+def my_record_list(request):
+    records = MeasurementRecord.objects.filter(
+        player__student__user=request.user
+    ).prefetch_related('items', 'approvalstatus_set').order_by('-measured_at')
+    return render(request, 'players/player/my_record_list.html', {'records': records})
+# 記録承認画面  選手向け
+@role_required('player')
+def approve_measurement_record(request, record_id):
+    if request.method == 'POST':
+        approval = ApprovalStatus.objects.filter(
+            record_id=record_id,
+            approver=request.user,
+            role='player',
+            status='pending'
+        ).first()
+        if approval:
+            approval.status = 'approved'
+            approval.approved_at = timezone.now()
+            approval.save()
+
+            # レコード全体のステータス変更
+            record = approval.record
+            record.status = 'awaiting_coach_approval'
+            record.save()
+
+    return redirect('my_record_list')
+
+# 記録否認画面  選手向け
+@role_required('player')
+def reject_measurement_record(request, record_id):
+    approval = get_object_or_404(
+        ApprovalStatus,
+        record_id=record_id,
+        approver=request.user,
+        role='player',
+        status='pending'
+    )
+
+    if request.method == 'POST':
+        form = RejectionForm(request.POST)
+        if form.is_valid():
+            approval.status = 'rejected'
+            approval.comment = form.cleaned_data['comment']
+            approval.approved_at = timezone.now()
+            approval.save()
+
+            # レコードの状態は変えずにそのまま（マネージャーが再作成）
+
+            return redirect('my_record_list')
+    else:
+        form = RejectionForm()
+
+    return render(request, 'players/player/reject_record.html', {
+        'form': form,
+        'record': approval.record
+    })
+
+
 
 # 記録入力画面  マネージャー向け
 @manager_required
