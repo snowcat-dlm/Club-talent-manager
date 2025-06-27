@@ -1,10 +1,14 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 
+from django.contrib import messages
 from accounts.models import CustomUser
-from accounts.forms import CustomUserCreationForm
-from .decorators import coach_or_director_required
-from django.conf import settings  #settings.pyをインポート
+from .decorators import coach_or_director_required    # @coach_or_director_requiredの設定をインポート
+from django.conf import settings                      # settings.pyをインポート
+from players.models import StudentProfile, PlayerProfile
+from players.forms import MemberCreationForm, StudentProfileForm, PlayerProfileForm
+
+
 
 
 # Create your views here.
@@ -32,48 +36,62 @@ def top_page(request):
         return render(request, 'players/top_unknown.html')  # 未定義のロール用
 
 # 監督・コーチ ユーザー追加・削除・一覧表示画面
+# 部員一覧画面
 @coach_or_director_required
 def user_list(request):
     users = CustomUser.objects.exclude(is_superuser=True)
     return render(request, 'players/user_list.html', {'users': users})
-
+# 部員追加画面
 @coach_or_director_required
 def user_create(request):
     if request.method == 'POST':
-        form = CustomUserCreationForm(request.POST)
-        if form.is_valid():
-            form.save()
+        user_form = MemberCreationForm(request.POST)
+        student_form = StudentProfileForm(request.POST)
+        player_form = PlayerProfileForm(request.POST)
+        role = user_form.data.get('role')
+
+        # ロールに応じてバリデーション対象を決定
+        needs_student = role in ['player', 'manager']
+        needs_player = role == 'player'
+        # バリデーションチェック
+        user_valid = user_form.is_valid()
+        student_valid = not needs_student or student_form.is_valid()
+        player_valid = not needs_player or player_form.is_valid()
+
+        if user_valid and student_valid and player_valid:
+            # カスタムユーザー作成
+            user = CustomUser.objects.create_user(
+                username=user_form.cleaned_data['username'],
+                email=user_form.cleaned_data['email'],
+                password=user_form.cleaned_data['password'],
+                role=user_form.cleaned_data['role'],
+            )
+            # カスタムユーザー作成時にロールが学生（playerまたはmanager）ならStudentProfile作成
+            if needs_student:
+                student = StudentProfile.objects.create(
+                    user=user,
+                    **student_form.cleaned_data
+                )
+                # カスタムユーザー作成時にロールがplayerならPlayerProfileも作成
+                if needs_player:
+                    PlayerProfile.objects.create(
+                        student=student,
+                        **player_form.cleaned_data
+                    )
+            
+            messages.success(request, f"ユーザー「{user.username}」を作成しました。")
             return redirect('user_list')
     else:
-        form = CustomUserCreationForm()
-    return render(request, 'players/user_form.html', {'form': form})
+        user_form = MemberCreationForm()
+        student_form = StudentProfileForm()
+        player_form = PlayerProfileForm()
 
-def create_member(request):
-    if request.user.role != 'director':
-        return render(request, 'players/unauthorized.html')
-
-    if request.method == 'POST':
-        form = MemberCreationForm(request.POST)
-        if form.is_valid():
-            user = CustomUser.objects.create_user(
-                username=form.cleaned_data['username'],
-                email=form.cleaned_data['email'],
-                password=form.cleaned_data['password'],
-                role=form.cleaned_data['role'],
-            )
-            StudentProfile.objects.create(
-                user=user,
-                grade=form.cleaned_data['grade'],
-                class_number=form.cleaned_data['class_number'],
-                joined_at=form.cleaned_data['joined_at'],
-                status='active',
-            )
-            return redirect('top_director')
-    else:
-        form = MemberCreationForm()
-    return render(request, 'players/create_member.html', {'form': form})
-
-
+    return render(request, 'players/user_create.html', {
+        'user_form': user_form,
+        'student_form': student_form,
+        'player_form': player_form,
+    })
+# 部員削除画面
 @coach_or_director_required
 def user_delete(request, user_id):
     user = get_object_or_404(CustomUser, id=user_id)
