@@ -48,3 +48,5 @@ venv/
 .DS_Store
 Thumbs.db
 
+# backupファイル
+Z-File-Backup
