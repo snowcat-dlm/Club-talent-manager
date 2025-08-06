@@ -6,10 +6,12 @@ from django.forms import inlineformset_factory
 
 class MemberCreationForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput(), label="パスワード")
+    last_name = forms.CharField(max_length=30, label="姓")
+    first_name = forms.CharField(max_length=30, label="名")
     role = forms.ChoiceField(choices=CustomUser.ROLE_CHOICES, label="ユーザー種別")
     class Meta:
         model = CustomUser
-        fields = ('username', 'email', 'password', 'role')
+        fields = ('username', 'last_name', 'first_name','email', 'password', 'role')
 
 class StudentProfileForm(forms.ModelForm):
     grade = forms.IntegerField(label="学年")
