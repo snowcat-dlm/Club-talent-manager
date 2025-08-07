@@ -16,5 +16,6 @@ python manage.py makemigrations
 echo "3: Running migrations..."
 python manage.py migrate
 
-echo "4: Starting server..."
-python manage.py runserver
+# Webサーバーを自動起動する場合は以下のコメントを外してください
+# echo "4: Starting server..."
+# python manage.py runserver
