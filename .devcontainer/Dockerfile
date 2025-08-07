@@ -18,6 +18,9 @@ RUN echo "ja_JP.UTF-8 UTF-8" >> /etc/locale.gen
 RUN locale-gen && update-locale LANG=ja_JP.UTF-8
 RUN pip install --no-cache-dir -r requirements.txt
 
+COPY .devcontainer/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
 # ロケール設定 - Ja
 ENV LANG=ja_JP.UTF-8
 ENV LANGUAGE=ja_JP:ja

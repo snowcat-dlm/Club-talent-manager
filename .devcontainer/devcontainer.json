@@ -29,5 +29,6 @@
 	},
 	"features": {
 		"ghcr.io/devcontainers/features/common-utils:2": {}
-	}
+	},
+	"postStartCommand": "/entrypoint.sh"
 }
