@@ -3,6 +3,7 @@
 {% block content %}
 <h2>測定記録一覧</h2>
 
+{% comment %}絞り込み{% endcomment %}
 <form method="get" class="row g-3 mb-3">
   <div class="col-md-3">
     <label class="form-label">選手</label>
@@ -10,7 +11,7 @@
       <option value="">-- 全員 --</option>
       {% for player in players %}
         <option value="{{ player.id }}" {% if selected_player == player.id|stringformat:"s" %}selected{% endif %}>
-          {{ player.username }}
+          {{ player.student.user.last_name }} {{ player.student.user.first_name }}
         </option>
       {% endfor %}
     </select>
@@ -23,6 +24,28 @@
       <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>
         {{ label }}
       </option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-2">
+    <label class="form-label">カテゴリー</label>
+    <select name="category" class="form-select">
+      <option value="">-- 全て --</option>
+      {% for cate in categories %}
+        <option value="{{ cate }}" {% if category == cate %}selected{% endif %}>
+          {{ cate }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-2">
+    <label class="form-label">測定項目</label>
+    <select name="item_name" class="form-select">
+      <option value="">-- 全て --</option>
+      {% for item in item_names %}
+        <option value="{{ item }}" {% if item_name == item %}selected{% endif %}>
+          {{ item }}
+        </option>
       {% endfor %}
     </select>
   </div>
@@ -40,27 +63,43 @@
   </div>
 </form>
 
+{% if plot_div %}
+  <div class="my-4">
+    {{ plot_div|safe }}
+  </div>
+{% endif %}
+
 <table class="table table-striped">
   <thead>
     <tr>
       <th>選手</th>
+      <th>カテゴリー</th>
+      <th>測定項目</th>
+      <th>測定値</th>
+      <th>単位</th>
       <th>測定日</th>
       <th>ステータス</th>
-      <th>作成者</th>
-      <th>更新日</th>
     </tr>
   </thead>
   <tbody>
     {% for record in records %}
-    <tr>
-      <td>{{ record.player.student.user.username }}</td>
-      <td>{{ record.measured_at }}</td>
-      <td>{{ record.status }}</td>
-      <td>{{ record.created_by.username }}</td>
-      <td>{{ record.updated_at }}</td>
-    </tr>
+      {% for item in record.items.all %}
+        {% if not tem_name or item.item_name == item_name %}
+          {% if not category or item.category == category %}
+            <tr>
+              <td>{{ record.player.student.user.username }}</td>
+              <td>{{ item.category }}</td>
+              <td>{{ item.item_name }}</td>
+              <td>{{ item.value }}</td>
+              <td>{{ item.unit }}</td>
+              <td>{{ record.measured_at }}</td>
+              <td>{{ record.status }}</td>
+            </tr>
+          {% endif %}
+        {% endif %}
+      {% endfor %}
     {% empty %}
-    <tr><td colspan="5">該当する記録はありません。</td></tr>
+      <tr><td colspan="5">該当する記録はありません。</td></tr>
     {% endfor %}
   </tbody>
 </table>

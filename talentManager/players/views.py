@@ -8,7 +8,9 @@ from .decorators import coach_or_director_required, coach_required, manager_requ
 from django.conf import settings                      # settings.pyをインポート
 from players.models import StudentProfile, PlayerProfile, MeasurementRecord, ApprovalStatus
 from players.forms import MemberCreationForm, StudentProfileForm, PlayerProfileForm, MeasurementForm, MeasurementItemFormSet, RejectionForm
-from .models import MeasurementRecord, ApprovalStatus
+from .models import MeasurementItem, MeasurementRecord, ApprovalStatus
+import plotly.graph_objects as go
+import plotly.offline as opy
 
 # トップページ
 def top_page(request):
@@ -329,16 +331,102 @@ STATUS_CHOICES = [
     ('awaiting_coach_approval', 'コーチ承認待ち'),
     ('approved', '承認済み'),
 ]
+
 @coach_or_director_required
+def all_players_records(request):
+    import plotly.graph_objs as go
+    import plotly.offline as opy
+    from .models import MeasurementRecord, MeasurementItem, PlayerProfile
+
+    #データ取得（プレイヤー、測定レコード、測定アイテムのカテゴリー）
+    players = PlayerProfile.objects.select_related('student__user').all()
+    records = MeasurementRecord.objects.select_related('player__student__user').prefetch_related('items').all()
+    categories = MeasurementItem.objects.values_list('category', flat=True).distinct()
+    item_names = MeasurementItem.objects.values_list('item_name', flat=True).distinct()
+
+    # --- フィルター取得 ---
+    player_id = request.GET.get('player')
+    status = request.GET.get('status')
+    date_from = request.GET.get('date_from')
+    date_to = request.GET.get('date_to')
+    category = request.GET.get('category')
+    item_name = request.GET.get('item_name')
+
+    # --- フィルター適用 ---
+    if player_id:
+        records = records.filter(player_id=player_id)
+    if status:
+        records = records.filter(status=status)
+    if date_from:
+        records = records.filter(measured_at__gte=date_from)
+    if date_to:
+        records = records.filter(measured_at__lte=date_to)
+
+    # --- グラフ生成 ---
+    traces = []
+    filtered_players = players.filter(id=player_id) if player_id else players
+
+    for player in filtered_players:
+        player_records = records.filter(player=player).order_by('measured_at')
+        dates, values = [], []
+        for record in player_records:
+            item = record.items.filter(item_name=item_name) if item_name else record.items.all()
+            item = item.filter(category=category).first() if category else item.first() 
+            if item:
+                dates.append(record.measured_at)
+                values.append(item.value)
+        if dates:
+            trace = go.Scatter(
+                x=dates,
+                y=values,
+                mode='lines+markers',
+                name=player.student.user.last_name + player.student.user.first_name
+            )
+            traces.append(trace)
+
+    plot_div = None
+    if traces:
+        layout = go.Layout(
+            title=f"{item_name or category or '記録'} の推移",
+            xaxis=dict(title='測定日'),
+            yaxis=dict(title='値'),
+            height=400
+        )
+        figure = go.Figure(data=traces, layout=layout)
+        plot_div = opy.plot(figure, auto_open=False, output_type='div')
+
+    return render(request, 'players/all_players_records.html', {
+        'records': records,
+        'players': players,
+        'selected_player': player_id,
+        'selected_status': status,
+        'date_from': date_from,
+        'date_to': date_to,
+        'status_choices': STATUS_CHOICES,
+        'categories': categories,
+        'category': category,
+        'item_names': item_names,
+        'item_name': item_name,
+        'plot_div': plot_div,
+    })
+
+
+""" @coach_or_director_required
 def all_players_records(request):
     records = MeasurementRecord.objects.select_related('player__student__user').all().order_by('-measured_at')
     players = PlayerProfile.objects.select_related('student__user').all()
+    items = MeasurementItem.objects.select_related('records__player__student__user').all()
+
 
     # フィルター取得
     player_id = request.GET.get('player')
     status = request.GET.get('status')
     date_from = request.GET.get('date_from')
     date_to = request.GET.get('date_to')
+    category = request.GET.get('category')  # 測定カテゴリ（例：走力）
+    item_name = request.GET.get('item_name')  # 測定項目名（例：50m走）
+    value = request.GET.get('value')  # 計測値（数値）
+    unit = request.GET.get('unit')  # 単位（例：秒, km/h）
 
     # フィルター適用
     if player_id:
@@ -353,6 +441,45 @@ def all_players_records(request):
     if date_to:
         records = records.filter(measured_at__lte=date_to)
 
+    if category:
+        items = items.filter(category=category)  # 測定カテゴリ（例：走力）
+
+    # グラフ描画
+    traces = []
+    filtered_players = players.filter(id=player_id) if player_id else players
+
+    for player in filtered_players:
+        player_records = records.filter(player=player).order_by('measured_at')
+        records_items = items.filter(record=player_records)
+        dates = []
+        values = []
+        for item in records_items:
+            item = MeasurementItem.objects.filter(category=category, item_name='走力').first()
+            if item:
+                dates.append(record.measured_at)
+                values.append(item.value)
+        if dates:
+            trace = go.Scatter(
+                x=dates,
+                y=values,
+                mode='lines+markers',
+                name=player.student.user.username
+            )
+            traces.append(trace)
+
+    plot_div = None
+    if traces:
+        layout = go.Layout(
+            title='50m走の推移',
+            xaxis=dict(title='測定日'),
+            yaxis=dict(title='秒'),
+            height=400
+        )
+        figure = go.Figure(data=traces, layout=layout)
+        plot_div = opy.plot(figure, auto_open=False, output_type='div')
+    
+    print(plot_div)
+    
     return render(request, 'players/all_players_records.html', {
         'records': records,
         'players': players,
@@ -361,4 +488,10 @@ def all_players_records(request):
         'date_from': date_from,
         'date_to': date_to,
         'status_choices': STATUS_CHOICES,
+        'category': category,
+        'item_name': item_name,
+        'value': value,
+        'unit': unit,
+        'plot_div': plot_div,
     })
+ """

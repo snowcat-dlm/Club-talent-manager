@@ -22,7 +22,11 @@ coach_test@example.com
 パスワード：
 YGyGmX%*FqD8nxEL
 
-# マネージャー
+# マネージャー1
+姓：
+マネ
+名：
+零一
 ユーザー名：
 manager
 メールアドレス：
@@ -30,10 +34,50 @@ manager_test@example.com
 パスワード：
 Xo9C%dzeKscyoA22
 
-# 選手
+# マネージャー2
+姓：
+マネ
+名：
+零二
+ユーザー名：
+manager2
+メールアドレス：
+manager_test@example.com
+パスワード：
+Xo9C%dzeKscyoA22
+
+# 選手1
+姓：
+選手
+名：
+零一
 ユーザー名：
 player
 メールアドレス：
-player_test@example.com
+player1_test@example.com
 パスワード：
 tXfhp*HsG7SSUgb^
+
+# 選手2
+姓：
+選手
+名：
+零二
+ユーザー名：
+player2
+メールアドレス：
+player2_test@example.com
+パスワード：
+tXfhp*HsG7SSUgb
+
+# 選手2
+姓：
+選手
+名：
+零三
+ユーザー名：
+player3
+メールアドレス：
+player3_test@example.com
+パスワード：
+player3
